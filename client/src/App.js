@@ -39,13 +39,13 @@ class App extends Component {
     const { accounts, contract } = this.state;
 
     // Stores a given value, 5 by default.
-    await contract.methods.createTask("First", "Task").send({ from: accounts[0] });
+    //await contract.methods.createTask("First", "Task").send({ from: accounts[0] });
 
     // Get the value from the contract to prove it worked.
     const taskCount = await contract.methods.taskCount().call();
     console.log(taskCount);
 
-    for(let i = 1; i <= taskCount; i++) {
+    for(let i = 0; i < taskCount; i++) {
       const task = await contract.methods.tasks(i).call();
       this.state.tasks.push(task);
     }
@@ -82,6 +82,14 @@ class App extends Component {
           Try changing the value stored on <strong>line 42</strong> of App.js.
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
+        <ul>
+          {this.state.tasks.map((task, index) => (
+            <li className="indent" key={index}>
+                {task.title}, {task.description}
+            </li>
+          ))}
+        </ul>
+        
         <button type="button" onClick={this.buttonTest}></button>
       </div>
     );
