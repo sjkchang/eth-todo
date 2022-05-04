@@ -1,11 +1,11 @@
 import React, { Component } from "react";
-import SimpleStorageContract from "./contracts/SimpleStorage.json";
+import TodoListContract from "./contracts/TodoList.json";
 import getWeb3 from "./getWeb3";
 
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+  state = { storageValue: 0, web3: null, accounts: null, contract: null, tasks: [] };
 
   componentDidMount = async () => {
     try {
@@ -17,9 +17,9 @@ class App extends Component {
 
       // Get the contract instance.
       const networkId = await web3.eth.net.getId();
-      const deployedNetwork = SimpleStorageContract.networks[networkId];
+      const deployedNetwork = TodoListContract.networks[networkId];
       const instance = new web3.eth.Contract(
-        SimpleStorageContract.abi,
+        TodoListContract.abi,
         deployedNetwork && deployedNetwork.address,
       );
 
@@ -39,13 +39,30 @@ class App extends Component {
     const { accounts, contract } = this.state;
 
     // Stores a given value, 5 by default.
-    await contract.methods.set(5).send({ from: accounts[0] });
+    await contract.methods.createTask("First", "Task").send({ from: accounts[0] });
 
     // Get the value from the contract to prove it worked.
-    const response = await contract.methods.get().call();
+    const taskCount = await contract.methods.taskCount().call();
+    console.log(taskCount);
 
+    for(let i = 1; i <= taskCount; i++) {
+      const task = await contract.methods.tasks(i).call();
+      this.state.tasks.push(task);
+    }
+    console.log(this.state.tasks);
     // Update state with the result.
-    this.setState({ storageValue: response });
+    this.setState({ storageValue: taskCount });
+  };
+
+  buttonTest = async () => {
+    const { accounts, contract } = this.state;
+
+    await contract.methods.createTask("Button", "Test").send({ from: accounts[0] });
+    const taskCount = await contract.methods.taskCount().call();
+
+    const task = await contract.methods.tasks(taskCount).call();
+    this.state.tasks.push(task);
+    console.log(this.state.tasks);
   };
 
   render() {
@@ -65,6 +82,7 @@ class App extends Component {
           Try changing the value stored on <strong>line 42</strong> of App.js.
         </p>
         <div>The stored value is: {this.state.storageValue}</div>
+        <button type="button" onClick={this.buttonTest}></button>
       </div>
     );
   }
