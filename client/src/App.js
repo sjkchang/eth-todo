@@ -5,7 +5,7 @@ import getWeb3 from "./getWeb3";
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null, tasks: [] };
+  state = {web3: null, accounts: null, contract: null, tasks: [] };
 
   componentDidMount = async () => {
     try {
@@ -24,8 +24,7 @@ class App extends Component {
       );
 
       // Set web3, accounts, and contract to the state, and then proceed with an
-      // example of interacting with the contract's methods.
-      this.setState({ web3, accounts, contract: instance }, this.runExample);
+      this.setState({ web3, accounts, contract: instance }, this.fetchTasks);
     } catch (error) {
       // Catch any errors for any of the above operations.
       alert(
@@ -35,34 +34,42 @@ class App extends Component {
     }
   };
 
-  runExample = async () => {
+  //Fetch the tasks that were created by the current account
+  fetchTasks = async () => {
     const { accounts, contract } = this.state;
-
-    // Stores a given value, 5 by default.
-    //await contract.methods.createTask("First", "Task").send({ from: accounts[0] });
-
-    // Get the value from the contract to prove it worked.
     const taskCount = await contract.methods.taskCount().call();
-    console.log(taskCount);
-
-    for(let i = 0; i < taskCount; i++) {
+    let tempTasks = []
+    for(let i = 1; i <= taskCount; i++) {
       const task = await contract.methods.tasks(i).call();
-      this.state.tasks.push(task);
+      if(task.createdBy == accounts[0]){
+        tempTasks.push(task);
+      }
     }
-    console.log(this.state.tasks);
-    // Update state with the result.
-    this.setState({ storageValue: taskCount });
+    this.setState({ tasks: tempTasks });
+    console.log(this.state.tasks)
   };
 
-  buttonTest = async () => {
+  createTask = async (title, description) => {
     const { accounts, contract } = this.state;
+    let response = await contract.methods.createTask(accounts[0], title, description).send({ from: accounts[0]});
+    let task = response.events.TaskCreated.returnValues;
+    console.log(task)
+    this.state.tasks.push(task)
+    this.setState({tasks: this.state.tasks})
+  };
 
-    await contract.methods.createTask("Button", "Test").send({ from: accounts[0] });
-    const taskCount = await contract.methods.taskCount().call();
+  toggleCompleted = async (taskId) => {
+    const { accounts, contract } = this.state;
+    let response = await contract.methods.toggleCompleted(taskId).send({ from: accounts[0] })
+    let task = await contract.methods.tasks(taskId).call();
 
-    const task = await contract.methods.tasks(taskCount).call();
-    this.state.tasks.push(task);
-    console.log(this.state.tasks);
+    let tempTasks = this.state.tasks;
+    for(let i = 0; i < tempTasks.length; i++) {
+      if(tempTasks[i].id === taskId) {
+        tempTasks[i] = task;
+      }
+    }
+    this.setState({tasks: tempTasks});
   };
 
   render() {
@@ -71,26 +78,32 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <h1>Good to Go!</h1>
-        <p>Your Truffle Box is installed and ready.</p>
-        <h2>Smart Contract Example</h2>
-        <p>
-          If your contracts compiled and migrated successfully, below will show
-          a stored value of 5 (by default).
-        </p>
-        <p>
-          Try changing the value stored on <strong>line 42</strong> of App.js.
-        </p>
-        <div>The stored value is: {this.state.storageValue}</div>
         <ul>
           {this.state.tasks.map((task, index) => (
-            <li className="indent" key={index}>
+            <li className="task" key={index}>
                 {task.title}, {task.description}
+                <input type="checkbox" checked={task.completed} onChange={() => this.toggleCompleted(task.id)} />
             </li>
           ))}
         </ul>
+        <label>
+          <h1>Add a task:</h1>
+          <form onSubmit={(event) => {
+              event.preventDefault()
+              this.createTask(event.target.title.value, event.target.description.value)} 
+            }>
+            <label>
+              Task Title:
+              <input type="text" name="title" />
+            </label>
+            <label>
+              Task Description:
+              <input type="text" name="description" />
+            </label>
+            <input type="submit" value="Add Tax"  />
+          </form>
+        </label>
         
-        <button type="button" onClick={this.buttonTest}></button>
       </div>
     );
   }

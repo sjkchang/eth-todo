@@ -6,6 +6,7 @@ contract TodoList {
 
   struct Task {
     uint id;
+    address createdBy;
     string title;
     string description;
     bool completed;
@@ -15,6 +16,7 @@ contract TodoList {
 
   event TaskCreated(
     uint id,
+    address createdBy,
     string title,
     string description,
     bool completed
@@ -25,10 +27,10 @@ contract TodoList {
     bool completed
   );
 
-  function createTask(string memory _title, string memory _description) public {
+  function createTask(address _createdBy, string memory _title, string memory _description) public {
     taskCount ++;
-    tasks[taskCount] = Task(taskCount, _title, _description, false);
-    emit TaskCreated(taskCount, _title, _description, false);
+    tasks[taskCount] = Task(taskCount, _createdBy, _title, _description, false);
+    emit TaskCreated(taskCount, _createdBy, _title, _description, false);
   }
 
   function toggleCompleted(uint _id) public {
