@@ -12,7 +12,7 @@ class App extends Component {
       // Get network provider and web3 instance.
       const web3 = await getWeb3();
 
-      // Use web3 to get the user's accounts.
+      // Get the user's accounts.
       const accounts = await web3.eth.getAccounts();
 
       // Get the contract instance.
@@ -23,7 +23,7 @@ class App extends Component {
         deployedNetwork && deployedNetwork.address,
       );
 
-      // Set web3, accounts, and contract to the state, and then proceed with an
+      // Set web3, accounts, and contract to the state
       this.setState({ web3, accounts, contract: instance }, this.fetchTasks);
     } catch (error) {
       // Catch any errors for any of the above operations.
@@ -51,18 +51,18 @@ class App extends Component {
 
   createTask = async (title, description) => {
     const { accounts, contract } = this.state;
+
     let response = await contract.methods.createTask(accounts[0], title, description).send({ from: accounts[0]});
     let task = response.events.TaskCreated.returnValues;
-    console.log(task)
     this.state.tasks.push(task)
     this.setState({tasks: this.state.tasks})
   };
 
   toggleCompleted = async (taskId) => {
     const { accounts, contract } = this.state;
-    let response = await contract.methods.toggleCompleted(taskId).send({ from: accounts[0] })
-    let task = await contract.methods.tasks(taskId).call();
 
+    await contract.methods.toggleCompleted(taskId).send({ from: accounts[0] })
+    let task = await contract.methods.tasks(taskId).call();
     let tempTasks = this.state.tasks;
     for(let i = 0; i < tempTasks.length; i++) {
       if(tempTasks[i].id === taskId) {
@@ -78,15 +78,6 @@ class App extends Component {
     }
     return (
       <div className="App">
-        <ul>
-          {this.state.tasks.map((task, index) => (
-            <li className="task" key={index}>
-                <strong>Task Title: </strong> {task.title + " "}
-                <strong>Task Description: </strong> {task.description}
-                <input type="checkbox" checked={task.completed} onChange={() => this.toggleCompleted(task.id)} />
-            </li>
-          ))}
-        </ul>
         <label>
           <h1>Add a task:</h1>
           <form onSubmit={(event) => {
@@ -97,16 +88,29 @@ class App extends Component {
               } 
             }>
             <label>
-              Task Title:
+              Task Title: 
               <input type="text" name="title" />
             </label>
+            <br/>
             <label>
-              Task Description:
+              Task Description: 
               <input type="text" name="description" />
             </label>
+            <br/>
             <input type="submit" value="Add Task"  />
           </form>
         </label>
+        <h1>Todo List</h1>
+        <ul>
+          {this.state.tasks.map((task, index) => (
+            <li className="task" key={index}>
+                <strong>Task Title: </strong> {task.title + " "}
+                <strong>Task Description: </strong> {task.description}
+                <input type="checkbox" checked={task.completed} onChange={() => this.toggleCompleted(task.id)} />
+            </li>
+          ))}
+        </ul>
+        
         
       </div>
     );
