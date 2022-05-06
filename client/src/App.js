@@ -81,7 +81,8 @@ class App extends Component {
         <ul>
           {this.state.tasks.map((task, index) => (
             <li className="task" key={index}>
-                {task.title}, {task.description}
+                <strong>Task Title: </strong> {task.title + " "}
+                <strong>Task Description: </strong> {task.description}
                 <input type="checkbox" checked={task.completed} onChange={() => this.toggleCompleted(task.id)} />
             </li>
           ))}
@@ -89,8 +90,11 @@ class App extends Component {
         <label>
           <h1>Add a task:</h1>
           <form onSubmit={(event) => {
-              event.preventDefault()
-              this.createTask(event.target.title.value, event.target.description.value)} 
+                event.preventDefault()
+                this.createTask(event.target.title.value, event.target.description.value)
+                event.target.title.value = ""
+                event.target.description.value = ""
+              } 
             }>
             <label>
               Task Title:
@@ -100,7 +104,7 @@ class App extends Component {
               Task Description:
               <input type="text" name="description" />
             </label>
-            <input type="submit" value="Add Tax"  />
+            <input type="submit" value="Add Task"  />
           </form>
         </label>
         

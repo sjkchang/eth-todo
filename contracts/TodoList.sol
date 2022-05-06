@@ -40,4 +40,8 @@ contract TodoList {
     emit TaskCompleted(_id, _task.completed);
   }
 
+  function getTask(uint _id) public returns (uint, address, string memory, string memory, bool) {
+    return (tasks[_id].id, tasks[_id].createdBy, tasks[_id].title, tasks[_id].description, tasks[_id].completed);
+  }
+
 }
