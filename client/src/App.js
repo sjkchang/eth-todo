@@ -80,19 +80,19 @@ class App extends Component {
       <div className="App">
         <label>
           <h1>Add a task:</h1>
-          <form onSubmit={(event) => {
+          <form className="form " onSubmit={(event) => {
                 event.preventDefault()
                 this.createTask(event.target.title.value, event.target.description.value)
                 event.target.title.value = ""
                 event.target.description.value = ""
               } 
             }>
-            <label>
+            <label className="form-title" >
               Task Title: 
               <input type="text" name="title" />
             </label>
             <br/>
-            <label>
+            <label className="form-description">
               Task Description: 
               <input type="text" name="description" />
             </label>
@@ -101,7 +101,7 @@ class App extends Component {
           </form>
         </label>
         <h1>Todo List</h1>
-        <ul>
+        <ul className="todo-list">
           {this.state.tasks.map((task, index) => (
             <li className="task" key={index}>
                 <strong>Task Title: </strong> {task.title + " "}
