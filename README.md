@@ -57,6 +57,7 @@ npm install -g truffle
 truffle compile
 truffle migrate --reset
 cd .. client
+npm install
 npm run start
 ```
 
